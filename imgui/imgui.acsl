@@ -1,0 +1,37 @@
+struct VSInput {
+  float2 pos : POSITION;
+  float2 uv : TEXCOORD;
+  float4 color : COLOR;
+};
+
+struct PCData {
+  float2 scale;
+  float2 translate;
+};
+AC_PUSH_CONSTANT(PCData, pc);
+
+struct FSInput {
+  float4 position : SV_Position;
+  float2 uv : TEXCOORD;
+  float4 color : COLOR;
+};
+
+FSInput
+vs(VSInput input)
+{
+  FSInput output;
+  output.position = float4(input.pos * pc.scale + pc.translate, 0, 1);
+  output.uv = input.uv;
+  output.color = input.color;
+  return output;
+}
+
+SamplerState      u_sampler : register(s0, space0);
+Texture2D<float4> u_texture : register(t0, space1);
+
+float4
+fs(FSInput input)
+    : SV_Target
+{
+  return input.color * u_texture.Sample(u_sampler, input.uv);
+}
